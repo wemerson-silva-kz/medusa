@@ -8,7 +8,7 @@ import {
   AuthenticatedMedusaRequest,
   MedusaResponse,
 } from "../../../types/routing"
-import { remapKeysForProduct, remapProduct } from "./helpers"
+import { refetchProduct, remapKeysForProduct, remapProduct } from "./helpers"
 import { AdminGetProductsParams } from "./validators"
 
 export const GET = async (
@@ -57,5 +57,10 @@ export const POST = async (
     throw errors[0].error
   }
 
-  res.status(200).json({ product: remapProduct(result[0]) })
+  const product = await refetchProduct(
+    result[0].id,
+    req.scope,
+    req.remoteQueryConfig.fields
+  )
+  res.status(200).json({ product: remapProduct(product) })
 }
