@@ -140,6 +140,8 @@ export const defaultAdminProductFields = [
   "images.created_at",
   "images.updated_at",
   "images.deleted_at",
+  "sales_channels.id",
+  "sales_channels.name",
   // TODO: Until we support wildcards we have to do something like this.
   ...defaultAdminProductsVariantFields.map((f) => `variants.${f}`),
 ]
