@@ -3,16 +3,17 @@ import {
   MedusaResponse,
 } from "../../../../types/routing"
 
-import { AdminPostInvitesInviteAcceptReq } from "../validators"
-import { IUserModuleService } from "@medusajs/types"
-import { InviteWorkflow } from "@medusajs/types"
-import { ModuleRegistrationName } from "@medusajs/modules-sdk"
 import { acceptInviteWorkflow } from "@medusajs/core-flows"
+import { ModuleRegistrationName } from "@medusajs/modules-sdk"
+import { IUserModuleService, InviteWorkflow } from "@medusajs/types"
+import { AdminPostInvitesInviteAcceptReq } from "../validators"
 
 export const POST = async (
   req: AuthenticatedMedusaRequest<AdminPostInvitesInviteAcceptReq>,
   res: MedusaResponse
 ) => {
+  console.log(req.auth)
+
   if (req.auth.actor_id) {
     const moduleService: IUserModuleService = req.scope.resolve(
       ModuleRegistrationName.USER
@@ -35,6 +36,7 @@ export const POST = async (
     const { result } = await workflow.run({ input })
     users = result
   } catch (e) {
+    console.log(e)
     res.status(401).json({ message: "Unauthorized" })
     return
   }

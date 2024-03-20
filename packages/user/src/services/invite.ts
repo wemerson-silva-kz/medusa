@@ -17,7 +17,7 @@ type InjectedDependencies = {
 }
 
 // 1 day
-const DEFAULT_VALID_INVITE_DURATION = 60 * 60 * 24
+const DEFAULT_VALID_INVITE_DURATION = 60 * 60 * 24 * 1000
 
 export default class InviteService<
   TEntity extends Invite = Invite

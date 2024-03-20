@@ -41,3 +41,35 @@ export const useV2LoginWithSession = () => {
     }
   )
 }
+
+export const useAdminCreateAuthUser = () => {
+  return useMutation((args: { email: string; password: string }) =>
+    medusa.client.request("POST", "/auth/admin/emailpass", {
+      email: args.email,
+      password: args.password,
+    })
+  )
+}
+
+export const useAdminAcceptInviteV2 = () => {
+  return useMutation(
+    (args: {
+      first_name: string
+      last_name: string
+      token: string
+      authToken: string
+    }) =>
+      medusa.client.request(
+        "POST",
+        `/admin/invites/accept?token=${args.token}`,
+        {
+          first_name: args.first_name,
+          last_name: args.last_name,
+        },
+        {},
+        {
+          Authorization: `Bearer ${args.authToken}`,
+        }
+      )
+  )
+}
