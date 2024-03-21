@@ -71,19 +71,21 @@ function ClaimsItem({
         </div>
 
         <div className="flex items-center">
-          <ActionMenu
-            groups={[
-              {
-                actions: [
-                  {
-                    label: t("actions.remove"),
-                    icon: <Trash />,
-                    onClick: () => onVariantRemove(item.id),
-                  },
-                ],
-              },
-            ]}
-          />
+          {onVariantRemove && (
+            <ActionMenu
+              groups={[
+                {
+                  actions: [
+                    {
+                      label: t("actions.remove"),
+                      icon: <Trash />,
+                      onClick: () => onVariantRemove(item.id),
+                    },
+                  ],
+                },
+              ]}
+            />
+          )}
         </div>
       </div>
 

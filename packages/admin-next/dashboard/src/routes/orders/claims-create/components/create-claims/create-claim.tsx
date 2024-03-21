@@ -81,14 +81,15 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
       reason: data.reason[item.id] as ClaimReason,
     }))
 
-    const additionalItems = type === "replace"
+    const additionalItems =
+      type === "replace"
         ? addedItems.map((item) => ({
-          quantity: data.quantity[item.id],
-          variant_id: item.id,
-        }))
-        : undefined,
+            quantity: data.quantity[item.id],
+            variant_id: item.id,
+          }))
+        : undefined
 
-      // TODO: rest
+    // TODO: rest
 
     handleSuccess(`/orders/${order.id}`)
   })
