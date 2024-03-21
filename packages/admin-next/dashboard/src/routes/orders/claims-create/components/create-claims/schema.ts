@@ -1,9 +1,8 @@
 import * as zod from "zod"
 
 export const CreateReturnSchema = zod.object({
-  quantity: zod.record(zod.string(), zod.number()),
-  reason: zod.record(zod.string(), zod.string().optional()),
-  note: zod.record(zod.string(), zod.string().optional()),
+  returnable_items: zod.object({}),
+
   location: zod.string(),
   shipping: zod.string(),
   send_notification: zod.boolean().optional(),

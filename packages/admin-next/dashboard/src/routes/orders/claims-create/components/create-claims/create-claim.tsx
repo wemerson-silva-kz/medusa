@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 
-import { useAdminCreateClaim, useAdminShippingOptions } from "medusa-react"
+import { useAdminCreateClaim } from "medusa-react"
+import { PricedVariant } from "@medusajs/client-types"
 import { Order } from "@medusajs/medusa"
 import { Button, ProgressStatus, ProgressTabs } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
@@ -14,6 +15,7 @@ import {
 import { ItemsTable } from "../items-table"
 import { ClaimsForm } from "./claims-form.tsx"
 import { CreateReturnSchema } from "./schema"
+import { getReturnableItemsForClaim } from "../../../../../lib/rma"
 
 type CreateReturnsFormProps = {
   order: Order
@@ -33,6 +35,8 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
   const { handleSuccess } = useRouteModal()
 
   const [selectedItems, setSelectedItems] = useState([])
+  const [addedItems, setAddedItems] = useState<Partial<LineItem>[]>([])
+
   const [tab, setTab] = React.useState<Tab>(Tab.ITEMS)
 
   const { mutateAsync: createClaim, isLoading } = useAdminCreateClaim(order.id)
@@ -43,9 +47,6 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
   // })
 
   const refundableAmount = useRef(0)
-
-  // TODO: should we filter fullfilled items only here
-  const selected = order.items.filter((i) => selectedItems.includes(i.id))
 
   const form = useForm<zod.infer<typeof CreateReturnSchema>>({
     defaultValues: {
@@ -66,9 +67,33 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
     },
   })
 
+  const returnableItems = useMemo(() => getReturnableItemsForClaim(order), [])
+  const selected = returnableItems.filter((i) => selectedItems.includes(i.id))
+
   const onSubmit = form.handleSubmit(async (data) => {
     handleSuccess(`/orders/${order.id}`)
   })
+
+  const onVariantAdd = (variants: PricedVariant[]) => {
+    setAddedItems(
+      variants.map((variant) => {
+        const item = {
+          id: variant.id,
+          variant,
+          thumbnail: variant.product.thumbnail,
+          title: variant.product.title,
+          quantity: 1,
+        }
+        form.setValue(`quantity.${item.id}`, 1)
+        form.setValue(`reason.${item.id}`, "")
+        form.setValue(`note.${item.id}`, "")
+
+        return item
+      })
+    )
+
+    // TODO: set quantities to form state
+  }
 
   const [status, setStatus] = React.useState<StepStatus>({
     [Tab.ITEMS]: "not-started",
@@ -86,7 +111,7 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
     switch (tab) {
       case Tab.ITEMS: {
         selected.forEach((item) => {
-          form.setValue(`quantity.${item.id}`, item.quantity)
+          form.setValue(`quantity.${item.id}`, item.returnable_quantity)
           form.setValue(`reason.${item.id}`, "")
           form.setValue(`note.${item.id}`, "")
         })
@@ -175,17 +200,23 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
         </RouteFocusModal.Header>
         <RouteFocusModal.Body className="flex h-[calc(100%-56px)] w-full flex-col items-center overflow-y-auto">
           <ProgressTabs.Content value={Tab.ITEMS} className="h-full w-full">
-            <ItemsTable
-              items={order.items}
-              selectedItems={selectedItems}
-              onSelectionChange={onSelectionChange}
-            />
+            {!!returnableItems.length ? (
+              <ItemsTable
+                items={returnableItems}
+                selectedItems={selectedItems}
+                onSelectionChange={onSelectionChange}
+              />
+            ) : (
+              <span>TODO NO shipped items placeholder</span>
+            )}
           </ProgressTabs.Content>
           <ProgressTabs.Content value={Tab.DETAILS} className="h-full w-full">
             <ClaimsForm
               form={form}
               items={selected}
               order={order}
+              addedItems={addedItems}
+              onVariantAdd={onVariantAdd}
               onRefundableAmountChange={onRefundableAmountChange}
             />
           </ProgressTabs.Content>

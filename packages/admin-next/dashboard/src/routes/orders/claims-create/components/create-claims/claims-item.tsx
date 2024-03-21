@@ -1,23 +1,28 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 
-import { Input, Select, Text } from "@medusajs/ui"
-import { LineItem } from "@medusajs/medusa"
+import { clx, Input, Select, Text } from "@medusajs/ui"
 import { UseFormReturn } from "react-hook-form"
 import { useAdminReturnReasons } from "medusa-react"
 
 import { MoneyAmountCell } from "../../../../../components/table/table-cells/common/money-amount-cell"
 import { Thumbnail } from "../../../../../components/common/thumbnail"
 import { Form } from "../../../../../components/common/form"
+import { ReturnItem } from "../../../../../lib/rma"
 
 type OrderEditItemProps = {
-  item: LineItem
+  item: ReturnItem
   currencyCode: string
-
+  isAddedItem?: boolean
   form: UseFormReturn<any>
 }
 
-function ClaimsItem({ item, currencyCode, form }: OrderEditItemProps) {
+function ClaimsItem({
+  item,
+  currencyCode,
+  form,
+  isAddedItem,
+}: OrderEditItemProps) {
   const { t } = useTranslation()
 
   const { return_reasons = [] } = useAdminReturnReasons()
@@ -46,7 +51,11 @@ function ClaimsItem({ item, currencyCode, form }: OrderEditItemProps) {
       </div>
 
       <div className="block p-3 text-sm">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div
+          className={clx("grid grid-cols-1 gap-3", {
+            "md:grid-cols-3": !isAddedItem,
+          })}
+        >
           <div className="flex-1">
             <Text weight="plus" className="txt-small mb-2">
               {t("fields.quantity")}
@@ -61,7 +70,11 @@ function ClaimsItem({ item, currencyCode, form }: OrderEditItemProps) {
                       <Input
                         className="bg-ui-bg-base txt-small w-full rounded-lg"
                         min={1}
-                        max={item.quantity}
+                        max={
+                          !isAddedItem
+                            ? item.returnable_quantity || item.quantity
+                            : undefined
+                        }
                         type="number"
                         {...field}
                         onChange={(e) => {
@@ -77,59 +90,63 @@ function ClaimsItem({ item, currencyCode, form }: OrderEditItemProps) {
             />
           </div>
 
-          <div className="flex-1">
-            <Text weight="plus" className="txt-small mb-2">
-              {t("fields.reason")}
-            </Text>
-            <Form.Field
-              control={form.control}
-              name={`reason.${item.id}`}
-              render={({ field: { onChange, ref, ...field } }) => {
-                return (
-                  <Form.Item>
-                    <Form.Control>
-                      <Select onValueChange={onChange} {...field}>
-                        <Select.Trigger
-                          className="bg-ui-bg-base txt-small"
-                          ref={ref}
-                        >
-                          <Select.Value />
-                        </Select.Trigger>
-                        <Select.Content>
-                          {return_reasons.map((i) => (
-                            <Select.Item key={i.id} value={i.id}>
-                              {i.label}
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select>
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
-            />
-          </div>
+          {!isAddedItem && (
+            <div className="flex-1">
+              <Text weight="plus" className="txt-small mb-2">
+                {t("fields.reason")}
+              </Text>
+              <Form.Field
+                control={form.control}
+                name={`reason.${item.id}`}
+                render={({ field: { onChange, ref, ...field } }) => {
+                  return (
+                    <Form.Item>
+                      <Form.Control>
+                        <Select onValueChange={onChange} {...field}>
+                          <Select.Trigger
+                            className="bg-ui-bg-base txt-small"
+                            ref={ref}
+                          >
+                            <Select.Value />
+                          </Select.Trigger>
+                          <Select.Content>
+                            {return_reasons.map((i) => (
+                              <Select.Item key={i.id} value={i.id}>
+                                {i.label}
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select>
+                      </Form.Control>
+                      <Form.ErrorMessage />
+                    </Form.Item>
+                  )
+                }}
+              />
+            </div>
+          )}
 
-          <div className="flex-1">
-            <Text weight="plus" className="txt-small mb-2">
-              {t("fields.note")}
-            </Text>
-            <Form.Field
-              control={form.control}
-              name={`note.${item.id}`}
-              render={({ field }) => {
-                return (
-                  <Form.Item>
-                    <Form.Control>
-                      <Input className="bg-ui-bg-base txt-small" {...field} />
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
-            />
-          </div>
+          {!isAddedItem && (
+            <div className="flex-1">
+              <Text weight="plus" className="txt-small mb-2">
+                {t("fields.note")}
+              </Text>
+              <Form.Field
+                control={form.control}
+                name={`note.${item.id}`}
+                render={({ field }) => {
+                  return (
+                    <Form.Item>
+                      <Form.Control>
+                        <Input className="bg-ui-bg-base txt-small" {...field} />
+                      </Form.Control>
+                      <Form.ErrorMessage />
+                    </Form.Item>
+                  )
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -129,7 +129,6 @@ export const VariantTable = ({
   }
 
   const handleSave = () => {
-    console.log(selectedVariants)
     onSave(intermediate, selectedVariants)
   }
 

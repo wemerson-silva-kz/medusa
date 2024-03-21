@@ -14,18 +14,18 @@ import {
   Select,
   Switch,
   Text,
+  clx,
 } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 import { useAdminShippingOptions, useAdminStockLocations } from "medusa-react"
 import { LevelWithAvailability } from "@medusajs/medusa"
 
-import { ClaimsItem } from "./claims-item.tsx"
+import { ClaimsItem } from "./claims-item"
 import { Form } from "../../../../../components/common/form"
 
 import { medusa } from "../../../../../lib/medusa"
 import { MoneyAmountCell } from "../../../../../components/table/table-cells/common/money-amount-cell"
 import { getCurrencySymbol } from "../../../../../lib/currencies"
-import { getDbAmount } from "../../../../../lib/money-amount-helpers"
 import { CreateReturnSchema } from "./schema"
 import { SplitView } from "../../../../../components/layout/split-view"
 import { VariantTable } from "../../../common/variant-table"
@@ -34,6 +34,8 @@ import { PricedVariant } from "@medusajs/client-types"
 type ReturnsFormProps = {
   form: UseFormReturn<z.infer<typeof CreateReturnSchema>>
   items: LineItem[] // Items selected for return
+  addedItems: LineItem[]
+  onVariantAdd: (variants: PricedVariant[]) => void
   order: Order
   onRefundableAmountChange: (amount: number) => void
 }
@@ -41,14 +43,14 @@ type ReturnsFormProps = {
 export function ClaimsForm({
   form,
   items,
+  addedItems,
+  onVariantAdd,
   order,
   onRefundableAmountChange,
 }: ReturnsFormProps) {
   const { t } = useTranslation()
 
   const [open, setOpen] = useState(false)
-
-  const [addedVariants, setAddedVariants] = useState<PricedVariant>([])
 
   const [inventoryMap, setInventoryMap] = useState<
     Record<string, LevelWithAvailability[]>
@@ -62,6 +64,8 @@ export function ClaimsForm({
 
   const noShippingOptions =
     !isShippingOptionsLoading && !shipping_options.length
+
+  const hasAddedItems = !!addedItems.length
 
   const { stock_locations = [] } = useAdminStockLocations({})
 
@@ -129,18 +133,6 @@ export function ClaimsForm({
    * HOOKS
    */
 
-  const shippingPrice = useMemo(() => {
-    if (enable_custom_shipping_price && custom_shipping_price) {
-      return getDbAmount(custom_shipping_price, order.currency_code)
-    }
-
-    const method = shipping_options?.find(
-      (o) => form.watch("shipping") === o.id
-    )
-
-    return method?.price_incl_tax || 0
-  }, [shipping, custom_shipping_price, enable_custom_shipping_price])
-
   const refundable = useMemo(() => {
     const itemTotal = items.reduce((acc: number, curr: LineItem): number => {
       const unitRefundable =
@@ -149,16 +141,11 @@ export function ClaimsForm({
       return acc + unitRefundable * quantity[curr.id]
     }, 0)
 
-    const amount = itemTotal - (shippingPrice || 0)
+    const amount = itemTotal
     onRefundableAmountChange(amount)
 
     return amount
-  }, [items, quantity, shippingPrice])
-
-  useEffect(() => {
-    form.setValue("enable_custom_shipping_price", false)
-    form.setValue("custom_shipping_price", 0)
-  }, [form.watch("enable_custom_refund")])
+  }, [items, quantity])
 
   /**
    * HANDLERS
@@ -168,7 +155,7 @@ export function ClaimsForm({
     variantIds: string[],
     variantsMap: Record<string, PricedVariant>
   ) => {
-    setAddedVariants(Object.values(variantsMap))
+    onVariantAdd(Object.values(variantsMap))
     setOpen(false)
   }
 
@@ -291,10 +278,25 @@ export function ClaimsForm({
               <Heading className="text-base">
                 {t("orders.claims.itemsToReplace")}
               </Heading>
-              <Text size="small" className="text-ui-fg-subtle">
-                {t("orders.claims.addItemsHint")}
-              </Text>
-              <div className="mt-2 text-right">
+              {!hasAddedItems ? (
+                <Text size="small" className="text-ui-fg-subtle">
+                  {t("orders.claims.addItemsHint")}
+                </Text>
+              ) : (
+                <div className="mt-4" />
+              )}
+              {addedItems.map((item) => (
+                <ClaimsItem
+                  key={item.id}
+                  item={item}
+                  form={form}
+                  isAddedItem
+                  currencyCode={order.currency_code}
+                />
+              ))}
+              <div
+                className={clx("mt-2 text-right", { "mt-4": hasAddedItems })}
+              >
                 <Button onClick={() => setOpen(true)} type="button">
                   {t("orders.claims.addItems")}
                 </Button>
@@ -318,37 +320,7 @@ export function ClaimsForm({
               </div>
             </div>
 
-            <div className="flex flex-col gap-y-4">
-              <Form.Field
-                control={form.control}
-                name="send_notification"
-                render={({ field }) => {
-                  return (
-                    <Form.Item>
-                      <div className="flex items-center justify-between">
-                        <Form.Label>
-                          {t("orders.returns.sendNotification")}
-                        </Form.Label>
-                        <Form.Control>
-                          <Form.Control>
-                            <Switch
-                              checked={!!field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </Form.Control>
-                        </Form.Control>
-                      </div>
-                      <Form.Hint className="!mt-1">
-                        {t("orders.returns.sendNotificationHint")}
-                      </Form.Hint>
-                      <Form.ErrorMessage />
-                    </Form.Item>
-                  )
-                }}
-              />
-            </div>
-
-            <div className="mt-10 flex flex-col gap-y-4">
+            <div className="mb-10 flex flex-col gap-y-4">
               <Form.Field
                 control={form.control}
                 name="enable_custom_refund"
@@ -404,32 +376,20 @@ export function ClaimsForm({
               )}
             </div>
 
-            <div className="mt-10 flex flex-col gap-y-4">
+            <div className="flex flex-col gap-y-4">
               <Form.Field
                 control={form.control}
-                name="enable_custom_shipping_price"
+                name="send_notification"
                 render={({ field }) => {
                   return (
                     <Form.Item>
                       <div className="flex items-center justify-between">
-                        <Form.Label
-                          tooltip={
-                            form.watch("enable_custom_refund")
-                              ? t("orders.returns.shippingPriceTooltip1")
-                              : !form.watch("shipping")
-                              ? t("orders.returns.shippingPriceTooltip2")
-                              : undefined
-                          }
-                        >
-                          {t("orders.returns.customShippingPrice")}
+                        <Form.Label>
+                          {t("orders.returns.sendNotification")}
                         </Form.Label>
                         <Form.Control>
                           <Form.Control>
                             <Switch
-                              disabled={
-                                form.watch("enable_custom_refund") ||
-                                !form.watch("shipping")
-                              }
                               checked={!!field.value}
                               onCheckedChange={field.onChange}
                             />
@@ -437,38 +397,13 @@ export function ClaimsForm({
                         </Form.Control>
                       </div>
                       <Form.Hint className="!mt-1">
-                        {t("orders.returns.customShippingPriceHint")}
+                        {t("orders.returns.sendNotificationHint")}
                       </Form.Hint>
                       <Form.ErrorMessage />
                     </Form.Item>
                   )
                 }}
               />
-
-              {form.watch("enable_custom_shipping_price") && (
-                <div className="w-[50%] pr-2">
-                  <Form.Field
-                    control={form.control}
-                    name="custom_shipping_price"
-                    render={({ field: { onChange, ...field } }) => {
-                      return (
-                        <Form.Item>
-                          <Form.Control>
-                            <CurrencyInput
-                              min={0}
-                              onValueChange={onChange}
-                              code={order.currency_code}
-                              symbol={getCurrencySymbol(order.currency_code)}
-                              {...field}
-                            />
-                          </Form.Control>
-                          <Form.ErrorMessage />
-                        </Form.Item>
-                      )
-                    }}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>

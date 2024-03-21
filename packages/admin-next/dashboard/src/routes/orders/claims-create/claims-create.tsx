@@ -8,7 +8,7 @@ export function ClaimsCreate() {
   const { id } = useParams()
 
   const { order, isLoading, isError, error } = useAdminOrder(id!, {
-    expand: "items,items.variant,items.variant.product",
+    expand: "items,items.variant,items.variant.product,returnable_items",
   })
 
   if (isError) {
