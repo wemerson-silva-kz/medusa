@@ -124,29 +124,20 @@ export function ClaimsForm({
     return !allItemsHaveLocation
   }, [items, inventoryMap, selectedLocation])
 
-  const {
-    quantity,
-    shipping,
-    custom_shipping_price,
-    enable_custom_shipping_price,
-  } = useWatch()
+  const quantity = useWatch({ control: form.control, name: "quantity" })
 
   /**
    * HOOKS
    */
 
   const refundable = useMemo(() => {
-    const itemTotal = items.reduce((acc: number, curr: LineItem): number => {
-      const unitRefundable =
-        (curr.refundable || 0) / (curr.quantity - curr.returned_quantity)
-
-      return acc + unitRefundable * quantity[curr.id]
+    const claimItemsRefund = items.reduce((acc, item) => {
+      return acc + (item.total / item.quantity) * quantity[item.id]
     }, 0)
 
-    const amount = itemTotal
-    onRefundableAmountChange(amount)
+    onRefundableAmountChange(claimItemsRefund)
 
-    return amount
+    return claimItemsRefund
   }, [items, quantity])
 
   /**
