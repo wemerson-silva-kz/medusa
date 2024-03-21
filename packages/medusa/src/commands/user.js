@@ -16,6 +16,8 @@ const useV2Command = async ({ email, invite, password }, { container }) => {
   const authService = container.resolve(ModuleRegistrationName.AUTH)
 
   if (invite) {
+    // The invite flow only works with the V2 version of @medusajs/dashboard
+    //  Therefore, make sure the FF is enabled in the project.
     const invite = await userService.createInvites({ email })
     Logger.info(`
     Invite token: ${invite.token}
