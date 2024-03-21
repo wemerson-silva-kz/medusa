@@ -215,7 +215,7 @@ export function ClaimsForm({
               <div className="flex-1">
                 <Form.Field
                   control={form.control}
-                  name="shipping"
+                  name="return_shipping"
                   render={({ field: { onChange, ref, ...field } }) => {
                     return (
                       <Form.Item>
@@ -302,15 +302,11 @@ export function ClaimsForm({
                 {t("orders.returns.refundAmount")}
               </Text>
               <div className="txt-small block flex-1 text-right">
-                {form.watch("enable_custom_refund") ? (
-                  <span className="text-right">-</span>
-                ) : (
-                  <MoneyAmountCell
-                    align="right"
-                    amount={refundable}
-                    currencyCode={order.currency_code}
-                  />
-                )}
+                <MoneyAmountCell
+                  align="right"
+                  amount={refundable}
+                  currencyCode={order.currency_code}
+                />
               </div>
             </div>
 
@@ -322,12 +318,18 @@ export function ClaimsForm({
                   return (
                     <Form.Item>
                       <div className="flex items-center justify-between">
-                        <Form.Label>
+                        <Form.Label
+                          tooltip={
+                            hasAddedItems &&
+                            t("orders.claims.customRefundDisabledHint")
+                          }
+                        >
                           {t("orders.returns.customRefund")}
                         </Form.Label>
                         <Form.Control>
                           <Form.Control>
                             <Switch
+                              disabled={hasAddedItems}
                               checked={!!field.value}
                               onCheckedChange={field.onChange}
                             />
@@ -343,7 +345,7 @@ export function ClaimsForm({
                 }}
               />
 
-              {form.watch("enable_custom_refund") && (
+              {!hasAddedItems && form.watch("enable_custom_refund") && (
                 <div className="w-[50%] pr-2">
                   <Form.Field
                     control={form.control}

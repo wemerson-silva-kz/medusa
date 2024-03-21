@@ -1,10 +1,12 @@
 import * as zod from "zod"
 
 export const CreateReturnSchema = zod.object({
-  returnable_items: zod.object({}),
+  quantity: zod.record(zod.string(), zod.number()),
+  reason: zod.record(zod.string(), zod.string().optional()),
+  note: zod.record(zod.string(), zod.string().optional()),
 
   location: zod.string(),
-  shipping: zod.string(),
+  return_shipping: zod.string(),
   send_notification: zod.boolean().optional(),
 
   enable_custom_refund: zod.boolean().optional(),

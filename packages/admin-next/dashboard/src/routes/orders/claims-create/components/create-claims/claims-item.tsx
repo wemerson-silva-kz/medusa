@@ -12,6 +12,25 @@ import { ReturnItem } from "../../../../../lib/rma"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { Trash } from "@medusajs/icons"
 
+const claimReturnReasons = [
+  {
+    label: "Missing Item",
+    value: "missing_item",
+  },
+  {
+    label: "Wrong Item",
+    value: "wrong_item",
+  },
+  {
+    label: "Production Failure",
+    value: "production_failure",
+  },
+  {
+    label: "Other",
+    value: "other",
+  },
+]
+
 type OrderEditItemProps = {
   item: ReturnItem
   currencyCode: string
@@ -28,8 +47,6 @@ function ClaimsItem({
   onVariantRemove,
 }: OrderEditItemProps) {
   const { t } = useTranslation()
-
-  const { return_reasons = [] } = useAdminReturnReasons()
 
   return (
     <div className="bg-ui-bg-subtle shadow-elevation-card-rest my-2 rounded-xl ">
@@ -130,8 +147,8 @@ function ClaimsItem({
                             <Select.Value />
                           </Select.Trigger>
                           <Select.Content>
-                            {return_reasons.map((i) => (
-                              <Select.Item key={i.id} value={i.id}>
+                            {claimReturnReasons.map((i) => (
+                              <Select.Item key={i.value} value={i.value}>
                                 {i.label}
                               </Select.Item>
                             ))}

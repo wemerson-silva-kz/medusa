@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form"
 
 import { useAdminCreateClaim } from "medusa-react"
 import { PricedVariant } from "@medusajs/client-types"
-import { Order } from "@medusajs/medusa"
+import { ClaimReason, LineItem, Order } from "@medusajs/medusa"
 import { Button, ProgressStatus, ProgressTabs } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 import * as zod from "zod"
@@ -56,7 +56,7 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
       note: {},
 
       location: "",
-      shipping: "",
+      return_shipping: "",
       send_notification: !order.no_notification,
 
       enable_custom_refund: false,
@@ -71,6 +71,25 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
   const selected = returnableItems.filter((i) => selectedItems.includes(i.id))
 
   const onSubmit = form.handleSubmit(async (data) => {
+    const type = addedItems.length ? "replace" : "refund"
+    const returnShipping = data.return_shipping
+
+    const returnableItems = selectedItems.map((item) => ({
+      item_id: item.id,
+      quantity: data.quantity[item.id],
+      note: data.note[item.id],
+      reason: data.reason[item.id] as ClaimReason,
+    }))
+
+    const additionalItems = type === "replace"
+        ? addedItems.map((item) => ({
+          quantity: data.quantity[item.id],
+          variant_id: item.id,
+        }))
+        : undefined,
+
+      // TODO: rest
+
     handleSuccess(`/orders/${order.id}`)
   })
 
@@ -82,6 +101,7 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
           variant,
           thumbnail: variant.product.thumbnail,
           title: variant.product.title,
+          total: variant.calculated_price_incl_tax,
           quantity: 1,
         }
         form.setValue(`quantity.${item.id}`, 1)
