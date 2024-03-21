@@ -2,13 +2,24 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Heading, Input, Text } from "@medusajs/ui"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom"
 import * as z from "zod"
 
 import { Form } from "../../components/common/form"
 import { LogoBox } from "../../components/common/logo-box"
-import { useV2LoginWithSession } from "../../lib/api-v2"
+import {
+  useConvertTokenToSession,
+  useV2LoginWithSession,
+} from "../../lib/api-v2"
 import { isAxiosError } from "../../lib/is-axios-error"
+import { useEffect } from "react"
+import { decodeToken } from "react-jwt"
+import { medusa } from "../../lib/medusa"
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -19,8 +30,30 @@ export const Login = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  const { mutateAsync: getSession } = useConvertTokenToSession()
+
+  const authToken = searchParams.get("auth_token")
+  const newUser: any = authToken ? decodeToken(authToken) : null
 
   const from = location.state?.from?.pathname || "/settings"
+
+  useEffect(() => {
+    medusa.client
+      .request(
+        "POST",
+        "/auth/session",
+        {},
+        {},
+        {
+          Authorization: `Bearer ${authToken}`,
+        }
+      )
+      .then(() => {
+        navigate(from, { replace: true })
+      })
+  }, [authToken])
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -78,6 +111,9 @@ export const Login = () => {
             {t("login.hint")}
           </Text>
         </div>
+        <a type="button" href="http://localhost:9000/auth/admin/google">
+          Login with google
+        </a>
         <Form {...form}>
           <form
             onSubmit={handleSubmit}

@@ -8142,14 +8142,15 @@ __metadata:
   dependencies:
     "@ariakit/react": ^0.4.1
     "@hookform/resolvers": 3.3.2
-    "@medusajs/icons": "workspace:^"
-    "@medusajs/medusa": "workspace:^"
-    "@medusajs/types": "workspace:^"
-    "@medusajs/ui": "workspace:^"
-    "@medusajs/ui-preset": "workspace:^"
-    "@medusajs/vite-plugin-extension": "workspace:^"
+    "@medusajs/icons": ^1.2.1
+    "@medusajs/medusa": latest
+    "@medusajs/types": latest
+    "@medusajs/ui": ^2.4.2
+    "@medusajs/ui-preset": latest
+    "@medusajs/vite-plugin-extension": latest
     "@radix-ui/react-collapsible": 1.0.3
     "@radix-ui/react-hover-card": ^1.0.7
+    "@react-oauth/google": latest
     "@tanstack/react-query": 4.22.0
     "@tanstack/react-table": 8.10.7
     "@tanstack/react-virtual": ^3.0.4
@@ -8166,7 +8167,7 @@ __metadata:
     i18next-browser-languagedetector: 7.2.0
     i18next-http-backend: 2.4.2
     match-sorter: ^6.3.4
-    medusa-react: "workspace:^"
+    medusa-react: latest
     postcss: ^8.4.33
     prettier: ^3.1.1
     react: 18.2.0
@@ -8181,6 +8182,7 @@ __metadata:
     tailwindcss: ^3.4.1
     typescript: 5.2.2
     vite: 5.0.10
+    vite-plugin-ngrok: ^1.0.0
     zod: 3.22.4
   languageName: unknown
   linkType: soft
@@ -8277,7 +8279,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@medusajs/icons@^1.1.0, @medusajs/icons@^1.2.1, @medusajs/icons@workspace:^, @medusajs/icons@workspace:packages/design-system/icons":
+"@medusajs/icons@^1.1.0, @medusajs/icons@^1.2.1, @medusajs/icons@workspace:packages/design-system/icons":
   version: 0.0.0-use.local
   resolution: "@medusajs/icons@workspace:packages/design-system/icons"
   dependencies:
@@ -8467,7 +8469,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@medusajs/medusa@^1.12.1, @medusajs/medusa@^1.12.2, @medusajs/medusa@^1.15.0, @medusajs/medusa@^1.17.1, @medusajs/medusa@^1.17.4, @medusajs/medusa@^1.19.1, @medusajs/medusa@^1.20.1, @medusajs/medusa@^1.20.2, @medusajs/medusa@^1.20.3, @medusajs/medusa@workspace:*, @medusajs/medusa@workspace:^, @medusajs/medusa@workspace:packages/medusa":
+"@medusajs/medusa@^1.12.1, @medusajs/medusa@^1.12.2, @medusajs/medusa@^1.15.0, @medusajs/medusa@^1.17.1, @medusajs/medusa@^1.17.4, @medusajs/medusa@^1.19.1, @medusajs/medusa@^1.20.1, @medusajs/medusa@^1.20.2, @medusajs/medusa@^1.20.3, @medusajs/medusa@workspace:*, @medusajs/medusa@workspace:packages/medusa":
   version: 0.0.0-use.local
   resolution: "@medusajs/medusa@workspace:packages/medusa"
   dependencies:
@@ -8544,6 +8546,70 @@ __metadata:
     medusa: ./cli.js
   languageName: unknown
   linkType: soft
+
+"@medusajs/medusa@npm:latest":
+  version: 1.20.3
+  resolution: "@medusajs/medusa@npm:1.20.3"
+  dependencies:
+    "@medusajs/core-flows": ^0.0.7
+    "@medusajs/link-modules": ^0.2.9
+    "@medusajs/medusa-cli": ^1.3.22
+    "@medusajs/modules-sdk": ^1.12.9
+    "@medusajs/orchestration": ^0.5.5
+    "@medusajs/utils": ^1.11.7
+    "@medusajs/workflows-sdk": ^0.1.4
+    awilix: ^8.0.0
+    body-parser: ^1.19.0
+    boxen: ^5.0.1
+    bullmq: ^5.4.2
+    chokidar: ^3.4.2
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    compression: ^1.7.4
+    connect-redis: ^5.0.0
+    cookie-parser: ^1.4.6
+    core-js: ^3.6.5
+    cors: ^2.8.5
+    cross-spawn: ^7.0.3
+    dotenv: ^16.4.5
+    express: ^4.18.2
+    express-session: ^1.17.3
+    fs-exists-cached: ^1.0.0
+    glob: ^7.1.6
+    ioredis: ^5.2.5
+    ioredis-mock: 8.4.0
+    iso8601-duration: ^1.3.0
+    jsonwebtoken: ^9.0.0
+    lodash: ^4.17.21
+    medusa-core-utils: ^1.2.1
+    medusa-telemetry: ^0.0.17
+    medusa-test-utils: ^1.1.42
+    morgan: ^1.9.1
+    multer: ^1.4.5-lts.1
+    node-schedule: ^2.1.1
+    papaparse: 5.3.2
+    passport: ^0.6.0
+    passport-custom: ^1.1.1
+    passport-jwt: ^4.0.1
+    passport-local: ^1.0.0
+    pg: ^8.11.2
+    qs: ^6.11.2
+    randomatic: ^3.1.1
+    reflect-metadata: ^0.1.13
+    regenerator-runtime: ^0.13.11
+    request-ip: ^3.3.0
+    scrypt-kdf: ^2.0.1
+    ulid: ^2.3.0
+    uuid: ^9.0.0
+    winston: ^3.8.2
+  peerDependencies:
+    medusa-interfaces: ^1.3.7
+    typeorm: ^0.3.16
+  bin:
+    medusa: cli.js
+  checksum: 942f334c50ae702a53900e11ab72be9587a6bfb20a91b7e1d6d626c12d7b4857502851230ef5ba2913000746c9a9905e8db655bd35c8b7b04581050077e72216
+  languageName: node
+  linkType: hard
 
 "@medusajs/modules-sdk@^1.12.3, @medusajs/modules-sdk@^1.12.8, @medusajs/modules-sdk@^1.12.9, @medusajs/modules-sdk@^1.8.8, @medusajs/modules-sdk@workspace:^, @medusajs/modules-sdk@workspace:packages/modules-sdk":
   version: 0.0.0-use.local
@@ -8979,7 +9045,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@medusajs/ui-preset@^1.1.1, @medusajs/ui-preset@^1.1.2, @medusajs/ui-preset@workspace:^, @medusajs/ui-preset@workspace:packages/design-system/ui-preset":
+"@medusajs/types@npm:latest":
+  version: 1.11.14
+  resolution: "@medusajs/types@npm:1.11.14"
+  checksum: da94b5981876de938e6b7747766c363630ad723921933f9aec31c7bcf3736af6b87265b3fcf63372f71a900ae6287df1a1eb1f984dbf8194b24affe3a9779e14
+  languageName: node
+  linkType: hard
+
+"@medusajs/ui-preset@^1.1.1, @medusajs/ui-preset@^1.1.2, @medusajs/ui-preset@workspace:packages/design-system/ui-preset":
   version: 0.0.0-use.local
   resolution: "@medusajs/ui-preset@workspace:packages/design-system/ui-preset"
   dependencies:
@@ -8994,7 +9067,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@medusajs/ui@^2.4.0, @medusajs/ui@workspace:^, @medusajs/ui@workspace:packages/design-system/ui":
+"@medusajs/ui-preset@npm:latest":
+  version: 1.1.2
+  resolution: "@medusajs/ui-preset@npm:1.1.2"
+  dependencies:
+    "@tailwindcss/forms": ^0.5.3
+    tailwindcss-animate: ^1.0.6
+  peerDependencies:
+    tailwindcss: ">=3.0.0"
+  checksum: 63b525eee5d5a6a7d2d9596f6cc9015c221a3a55c83f524511d35eeb6916261baeae472e8748725480016a38e379f6a1a34e373d4ca824bbabdb151605086f94
+  languageName: node
+  linkType: hard
+
+"@medusajs/ui@^2.4.0, @medusajs/ui@^2.4.2, @medusajs/ui@workspace:packages/design-system/ui":
   version: 0.0.0-use.local
   resolution: "@medusajs/ui@workspace:packages/design-system/ui"
   dependencies:
@@ -9119,7 +9204,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@medusajs/vite-plugin-extension@*, @medusajs/vite-plugin-extension@workspace:^, @medusajs/vite-plugin-extension@workspace:packages/admin-next/vite-plugin-extension":
+"@medusajs/vite-plugin-extension@*, @medusajs/vite-plugin-extension@workspace:packages/admin-next/vite-plugin-extension":
   version: 0.0.0-use.local
   resolution: "@medusajs/vite-plugin-extension@workspace:packages/admin-next/vite-plugin-extension"
   dependencies:
@@ -9139,6 +9224,21 @@ __metadata:
     vite: ^5.0.0
   languageName: unknown
   linkType: soft
+
+"@medusajs/vite-plugin-extension@npm:latest":
+  version: 0.0.0
+  resolution: "@medusajs/vite-plugin-extension@npm:0.0.0"
+  dependencies:
+    "@babel/parser": 7.23.5
+    "@babel/traverse": 7.23.5
+    chokidar: 3.5.3
+    fdir: 6.1.1
+    magic-string: 0.30.5
+  peerDependencies:
+    vite: ^5.0.0
+  checksum: 8fd1a63937204a9f1d1ef4579709165568166a13e5052734f3299b92f607e3ab9426fdb4b55c74dd084b2c9b389acc4b978da92fa2589559bf13860c3dec87e8
+  languageName: node
+  linkType: hard
 
 "@medusajs/workflow-engine-inmemory@workspace:*, @medusajs/workflow-engine-inmemory@workspace:packages/workflow-engine-inmemory":
   version: 0.0.0-use.local
@@ -9477,6 +9577,145 @@ __metadata:
     pump: ^3.0.0
     tar-fs: ^2.1.1
   checksum: d66e76c6c990745d691c85d1dfa7f3dfd181405bb52c295baf4d1838b847d40c686e24602ea0ab1cdeb14d409db59f6bb9e2f96f56fe53da275da9cccf778e27
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-android-arm-eabi@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-android-arm-eabi@npm:0.9.1"
+  conditions: os=android & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-android-arm64@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-android-arm64@npm:0.9.1"
+  conditions: os=android & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-darwin-arm64@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-darwin-arm64@npm:0.9.1"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-darwin-universal@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-darwin-universal@npm:0.9.1"
+  conditions: os=darwin
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-darwin-x64@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-darwin-x64@npm:0.9.1"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-freebsd-x64@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-freebsd-x64@npm:0.9.1"
+  conditions: os=freebsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-linux-arm-gnueabihf@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-linux-arm-gnueabihf@npm:0.9.1"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-linux-arm64-gnu@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-linux-arm64-gnu@npm:0.9.1"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-linux-arm64-musl@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-linux-arm64-musl@npm:0.9.1"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-linux-x64-gnu@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-linux-x64-gnu@npm:0.9.1"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-linux-x64-musl@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-linux-x64-musl@npm:0.9.1"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-win32-ia32-msvc@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-win32-ia32-msvc@npm:0.9.1"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok-win32-x64-msvc@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok-win32-x64-msvc@npm:0.9.1"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@ngrok/ngrok@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "@ngrok/ngrok@npm:0.9.1"
+  dependencies:
+    "@ngrok/ngrok-android-arm-eabi": 0.9.1
+    "@ngrok/ngrok-android-arm64": 0.9.1
+    "@ngrok/ngrok-darwin-arm64": 0.9.1
+    "@ngrok/ngrok-darwin-universal": 0.9.1
+    "@ngrok/ngrok-darwin-x64": 0.9.1
+    "@ngrok/ngrok-freebsd-x64": 0.9.1
+    "@ngrok/ngrok-linux-arm-gnueabihf": 0.9.1
+    "@ngrok/ngrok-linux-arm64-gnu": 0.9.1
+    "@ngrok/ngrok-linux-arm64-musl": 0.9.1
+    "@ngrok/ngrok-linux-x64-gnu": 0.9.1
+    "@ngrok/ngrok-linux-x64-musl": 0.9.1
+    "@ngrok/ngrok-win32-ia32-msvc": 0.9.1
+    "@ngrok/ngrok-win32-x64-msvc": 0.9.1
+  dependenciesMeta:
+    "@ngrok/ngrok-android-arm-eabi":
+      optional: true
+    "@ngrok/ngrok-android-arm64":
+      optional: true
+    "@ngrok/ngrok-darwin-arm64":
+      optional: true
+    "@ngrok/ngrok-darwin-universal":
+      optional: true
+    "@ngrok/ngrok-darwin-x64":
+      optional: true
+    "@ngrok/ngrok-freebsd-x64":
+      optional: true
+    "@ngrok/ngrok-linux-arm-gnueabihf":
+      optional: true
+    "@ngrok/ngrok-linux-arm64-gnu":
+      optional: true
+    "@ngrok/ngrok-linux-arm64-musl":
+      optional: true
+    "@ngrok/ngrok-linux-x64-gnu":
+      optional: true
+    "@ngrok/ngrok-linux-x64-musl":
+      optional: true
+    "@ngrok/ngrok-win32-ia32-msvc":
+      optional: true
+    "@ngrok/ngrok-win32-x64-msvc":
+      optional: true
+  checksum: 7126ca1c074c443e93623b02878704fcf5b808b39e0c784fe2314a87b09d7eb6e297b7ca14a9b63eb7191c177c7a5d6260278314fd8b15e6ebbb52027eaaaae6
   languageName: node
   linkType: hard
 
@@ -11854,6 +12093,16 @@ __metadata:
   version: 4.0.2
   resolution: "@react-dnd/shallowequal@npm:4.0.2"
   checksum: 9a352fd176752e5d9c2797d598aca034b7829111ae0c992d80f40d5f068fcd6a039b1841c741dfa1ab67a36a00664310aec4f0ce216e4112f80875c9fe6fd8dc
+  languageName: node
+  linkType: hard
+
+"@react-oauth/google@npm:latest":
+  version: 0.12.1
+  resolution: "@react-oauth/google@npm:0.12.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: fe23e3c0a4d0b9999fcd7b932b1a42bf94fdab526473931d780d08742455b8861fc647857b3b491e258ecef4a407dbf7321440c0d00890e23059d487795f92fb
   languageName: node
   linkType: hard
 
@@ -38262,7 +38511,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"medusa-react@^9.0.13, medusa-react@^9.0.16, medusa-react@workspace:^, medusa-react@workspace:packages/medusa-react":
+"medusa-react@^9.0.13, medusa-react@^9.0.16, medusa-react@workspace:packages/medusa-react":
   version: 0.0.0-use.local
   resolution: "medusa-react@workspace:packages/medusa-react"
   dependencies:
@@ -38300,6 +38549,20 @@ __metadata:
     react-dom: ^16.8 || ^17.0 || ^18.0
   languageName: unknown
   linkType: soft
+
+"medusa-react@npm:latest":
+  version: 9.0.16
+  resolution: "medusa-react@npm:9.0.16"
+  dependencies:
+    "@medusajs/medusa-js": "*"
+  peerDependencies:
+    "@medusajs/medusa": ^1.17.2
+    "@tanstack/react-query": ^4.22.0
+    react: ^16.8 || ^17.0 || ^18.0
+    react-dom: ^16.8 || ^17.0 || ^18.0
+  checksum: 9f73fc2badc5ee404ab58bbe764b22c428ffce3f107a1b1006fbd5673042be93cdc2053bbfa1023a13865d81f0688705e56a86e0042fdf491b677b55a2d91508
+  languageName: node
+  linkType: hard
 
 "medusa-source-shopify@workspace:packages/medusa-source-shopify":
   version: 0.0.0-use.local
@@ -51334,6 +51597,18 @@ __metadata:
   bin:
     vite-node: vite-node.mjs
   checksum: 0db82ca0c3c02ceb7dff191aaa5661eaa24fc29d7027541839ae3a1d230e33568589a1fcbe0450aaeade2216b0816bcbcd13307a32add3fef10f9c88e39e9b1d
+  languageName: node
+  linkType: hard
+
+"vite-plugin-ngrok@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "vite-plugin-ngrok@npm:1.0.0"
+  dependencies:
+    "@ngrok/ngrok": ^0.9.1
+    picocolors: ^1.0.0
+  peerDependencies:
+    vite: ^2.9.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
+  checksum: 03b127d8a020b17513e8b7c429f3e71112fb803d5101a94987b0cbc8fd1e1dfab01403ca2fe666de9c4bfa029f64b0a3ca1409ca57f01fb92de8a216dc74e130
   languageName: node
   linkType: hard
 

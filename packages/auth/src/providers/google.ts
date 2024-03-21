@@ -105,7 +105,11 @@ class GoogleProvider extends AbstractAuthModuleProvider {
       }
     }
 
-    return { success: true, authUser }
+    return {
+      success: true,
+      authUser,
+      successRedirectUrl: "http://localhost:5173/login",
+    }
   }
 
   // abstractable
@@ -121,12 +125,10 @@ class GoogleProvider extends AbstractAuthModuleProvider {
     }
 
     try {
-      console.log("PARAMS", tokenParams)
       const accessToken = await client.getToken(tokenParams)
 
       return await this.verify_(accessToken.token.id_token)
     } catch (error) {
-      console.log("ERROR: @", error)
       return { success: false, error: error.message }
     }
   }

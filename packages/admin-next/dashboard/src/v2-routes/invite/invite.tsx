@@ -15,9 +15,9 @@ import { isAxiosError } from "../../lib/is-axios-error"
 import {
   useAdminAcceptInviteV2,
   useAdminCreateAuthUser,
+  useCreateUserAndSetSession,
 } from "../../lib/api-v2"
 import { medusa } from "../../lib/medusa"
-import { useGoogleLogin } from "@react-oauth/google"
 
 const CreateAccountSchema = z
   .object({
@@ -254,13 +254,9 @@ const CreateView = ({
     <div className="flex w-full flex-col items-center">
       <div className="mb-4 flex flex-col items-center">
         <Heading>{t("invite.title")}</Heading>
-        <Button
-          onClick={async () => {
-            await medusa.client.request("GET", `/auth/admin/google`, {})
-          }}
-        >
+        <a type="button" href="http://localhost:9000/auth/admin/google">
           Test login
-        </Button>
+        </a>
         <Text size="small" className="text-ui-fg-subtle text-center">
           {t("invite.hint")}
         </Text>

@@ -42,6 +42,30 @@ export const useV2LoginWithSession = () => {
   )
 }
 
+export const useCreateUserAndSetSession = () => {
+  return useMutation(
+    (payload: {
+      email: string
+      first_name: string
+      last_name: string
+      token: string
+    }) =>
+      medusa.client.request(
+        "POST",
+        "/admin/users",
+        {
+          email: payload.email,
+          first_name: payload.first_name,
+          last_name: payload.last_name,
+        },
+        {},
+        {
+          Authorization: `Bearer ${payload.token}`,
+        }
+      )
+  )
+}
+
 export const useAdminCreateAuthUser = (provider = "emailpass") => {
   return useMutation((args: Record<string, any>) =>
     medusa.client.request("POST", `/auth/admin/${provider}`, args)

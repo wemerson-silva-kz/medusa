@@ -22,9 +22,9 @@ export const ProtectedRoute = () => {
     )
   }
 
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />
-  }
+  // if (!user) {
+  //   return <Navigate to="/login" state={{ from: location }} replace />
+  // }
 
   return (
     <SidebarProvider>
@@ -44,6 +44,10 @@ export const v2Routes: RouteObject[] = [
   {
     path: "/login",
     lazy: () => import("../../v2-routes/login"),
+  },
+  {
+    path: "/success",
+    lazy: () => import("../../v2-routes/success"),
   },
   {
     path: "/",
