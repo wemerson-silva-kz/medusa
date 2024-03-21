@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken"
-import { MedusaError } from "@medusajs/utils"
 import { ModuleRegistrationName } from "@medusajs/modules-sdk"
 import { AuthenticationInput, IAuthModuleService } from "@medusajs/types"
+import { MedusaError } from "@medusajs/utils"
+import jwt from "jsonwebtoken"
 import { MedusaRequest, MedusaResponse } from "../../../../../types/routing"
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
@@ -29,8 +29,9 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   }
 
   if (success) {
+    console.log("authUser", authUser)
     const { jwt_secret } = req.scope.resolve("configModule").projectConfig
-    const token = jwt.sign(authUser, jwt_secret)
+    const token = jwt.sign(JSON.stringify(authUser), jwt_secret)
     return res.status(200).json({ token })
   }
 

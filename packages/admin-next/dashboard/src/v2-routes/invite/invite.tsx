@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { UserRoles } from "@medusajs/medusa"
-import { Alert, Button, Heading, Input, Text, Tooltip } from "@medusajs/ui"
+import { Alert, Button, Heading, Input, Text } from "@medusajs/ui"
 import { AnimatePresence, motion } from "framer-motion"
-import { useAdminAcceptInvite, useAdminCustomPost } from "medusa-react"
 import { Trans, useTranslation } from "react-i18next"
 import { Link, useSearchParams } from "react-router-dom"
 import * as z from "zod"
@@ -17,6 +16,8 @@ import {
   useAdminAcceptInviteV2,
   useAdminCreateAuthUser,
 } from "../../lib/api-v2"
+import { medusa } from "../../lib/medusa"
+import { useGoogleLogin } from "@react-oauth/google"
 
 const CreateAccountSchema = z
   .object({
@@ -253,6 +254,13 @@ const CreateView = ({
     <div className="flex w-full flex-col items-center">
       <div className="mb-4 flex flex-col items-center">
         <Heading>{t("invite.title")}</Heading>
+        <Button
+          onClick={async () => {
+            await medusa.client.request("GET", `/auth/admin/google`, {})
+          }}
+        >
+          Test login
+        </Button>
         <Text size="small" className="text-ui-fg-subtle text-center">
           {t("invite.hint")}
         </Text>

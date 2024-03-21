@@ -42,12 +42,9 @@ export const useV2LoginWithSession = () => {
   )
 }
 
-export const useAdminCreateAuthUser = () => {
-  return useMutation((args: { email: string; password: string }) =>
-    medusa.client.request("POST", "/auth/admin/emailpass", {
-      email: args.email,
-      password: args.password,
-    })
+export const useAdminCreateAuthUser = (provider = "emailpass") => {
+  return useMutation((args: Record<string, any>) =>
+    medusa.client.request("POST", `/auth/admin/${provider}`, args)
   )
 }
 

@@ -1,8 +1,4 @@
-import {
-  AuthenticationInput,
-  AuthenticationResponse,
-  ModulesSdkTypes,
-} from "@medusajs/types"
+import { AuthenticationInput, AuthenticationResponse } from "@medusajs/types"
 import { AbstractAuthModuleProvider, MedusaError } from "@medusajs/utils"
 import { AuthUserService } from "@services"
 import jwt, { JwtPayload } from "jsonwebtoken"
@@ -12,7 +8,6 @@ import url from "url"
 
 type InjectedDependencies = {
   authUserService: AuthUserService
-  authProviderService: ModulesSdkTypes.InternalModuleService<any>
 }
 
 type ProviderConfig = {
@@ -26,16 +21,14 @@ class GoogleProvider extends AbstractAuthModuleProvider {
   public static DISPLAY_NAME = "Google Authentication"
 
   protected readonly authUserService_: AuthUserService
-  protected readonly authProviderService_: ModulesSdkTypes.InternalModuleService<any>
 
-  constructor({ authUserService, authProviderService }: InjectedDependencies) {
+  constructor({ authUserService }: InjectedDependencies) {
     super(arguments[0], {
       provider: GoogleProvider.PROVIDER,
       displayName: GoogleProvider.DISPLAY_NAME,
     })
 
     this.authUserService_ = authUserService
-    this.authProviderService_ = authProviderService
   }
 
   async authenticate(
@@ -128,10 +121,12 @@ class GoogleProvider extends AbstractAuthModuleProvider {
     }
 
     try {
+      console.log("PARAMS", tokenParams)
       const accessToken = await client.getToken(tokenParams)
 
       return await this.verify_(accessToken.token.id_token)
     } catch (error) {
+      console.log("ERROR: @", error)
       return { success: false, error: error.message }
     }
   }
@@ -165,8 +160,6 @@ class GoogleProvider extends AbstractAuthModuleProvider {
   private async getProviderConfig(
     req: AuthenticationInput
   ): Promise<ProviderConfig> {
-    await this.authProviderService_.retrieve(GoogleProvider.PROVIDER)
-
     const config = this.getConfigFromScope()
 
     const callbackURL = config.callbackURL
