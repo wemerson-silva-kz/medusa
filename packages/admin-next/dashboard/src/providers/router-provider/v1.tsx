@@ -128,6 +128,10 @@ export const v1Routes: RouteObject[] = [
                     path: "returns",
                     lazy: () => import("../../routes/orders/returns-create"),
                   },
+                  {
+                    path: "claims",
+                    lazy: () => import("../../routes/orders/claims-create"),
+                  },
                 ],
               },
             ],
