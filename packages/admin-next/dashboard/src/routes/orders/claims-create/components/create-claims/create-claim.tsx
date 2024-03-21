@@ -95,6 +95,10 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
     // TODO: set quantities to form state
   }
 
+  const onVarianRemove = (variantId: string) => {
+    setAddedItems((state) => state.filter((i) => i.id !== variantId))
+  }
+
   const [status, setStatus] = React.useState<StepStatus>({
     [Tab.ITEMS]: "not-started",
     [Tab.DETAILS]: "not-started",
@@ -217,6 +221,7 @@ export function CreateClaim({ order }: CreateReturnsFormProps) {
               order={order}
               addedItems={addedItems}
               onVariantAdd={onVariantAdd}
+              onVariantRemove={onVarianRemove}
               onRefundableAmountChange={onRefundableAmountChange}
             />
           </ProgressTabs.Content>

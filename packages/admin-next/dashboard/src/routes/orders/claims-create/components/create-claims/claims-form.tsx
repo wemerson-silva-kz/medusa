@@ -19,6 +19,7 @@ import {
 import { useTranslation } from "react-i18next"
 import { useAdminShippingOptions, useAdminStockLocations } from "medusa-react"
 import { LevelWithAvailability } from "@medusajs/medusa"
+import { PricedVariant } from "@medusajs/client-types"
 
 import { ClaimsItem } from "./claims-item"
 import { Form } from "../../../../../components/common/form"
@@ -29,13 +30,13 @@ import { getCurrencySymbol } from "../../../../../lib/currencies"
 import { CreateReturnSchema } from "./schema"
 import { SplitView } from "../../../../../components/layout/split-view"
 import { VariantTable } from "../../../common/variant-table"
-import { PricedVariant } from "@medusajs/client-types"
 
 type ReturnsFormProps = {
   form: UseFormReturn<z.infer<typeof CreateReturnSchema>>
   items: LineItem[] // Items selected for return
   addedItems: LineItem[]
   onVariantAdd: (variants: PricedVariant[]) => void
+  onVariantRemove: (variantId: string) => void
   order: Order
   onRefundableAmountChange: (amount: number) => void
 }
@@ -45,6 +46,7 @@ export function ClaimsForm({
   items,
   addedItems,
   onVariantAdd,
+  onVariantRemove,
   order,
   onRefundableAmountChange,
 }: ReturnsFormProps) {
@@ -291,6 +293,7 @@ export function ClaimsForm({
                   item={item}
                   form={form}
                   isAddedItem
+                  onVariantRemove={onVariantRemove}
                   currencyCode={order.currency_code}
                 />
               ))}

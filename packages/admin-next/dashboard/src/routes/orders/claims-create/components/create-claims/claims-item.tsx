@@ -9,12 +9,15 @@ import { MoneyAmountCell } from "../../../../../components/table/table-cells/com
 import { Thumbnail } from "../../../../../components/common/thumbnail"
 import { Form } from "../../../../../components/common/form"
 import { ReturnItem } from "../../../../../lib/rma"
+import { ActionMenu } from "../../../../../components/common/action-menu"
+import { Trash } from "@medusajs/icons"
 
 type OrderEditItemProps = {
   item: ReturnItem
   currencyCode: string
   isAddedItem?: boolean
   form: UseFormReturn<any>
+  onVariantRemove?: (variantId: string) => {}
 }
 
 function ClaimsItem({
@@ -22,6 +25,7 @@ function ClaimsItem({
   currencyCode,
   form,
   isAddedItem,
+  onVariantRemove,
 }: OrderEditItemProps) {
   const { t } = useTranslation()
 
@@ -47,6 +51,22 @@ function ClaimsItem({
 
         <div className="text-ui-fg-subtle txt-small mr-2 flex flex-shrink-0">
           <MoneyAmountCell currencyCode={currencyCode} amount={item.total} />
+        </div>
+
+        <div className="flex items-center">
+          <ActionMenu
+            groups={[
+              {
+                actions: [
+                  {
+                    label: t("actions.remove"),
+                    icon: <Trash />,
+                    onClick: () => onVariantRemove(item.id),
+                  },
+                ],
+              },
+            ]}
+          />
         </div>
       </div>
 
