@@ -12,8 +12,6 @@ export const POST = async (
   req: AuthenticatedMedusaRequest<AdminPostInvitesInviteAcceptReq>,
   res: MedusaResponse
 ) => {
-  console.log(req.auth)
-
   if (req.auth.actor_id) {
     const moduleService: IUserModuleService = req.scope.resolve(
       ModuleRegistrationName.USER
@@ -32,6 +30,7 @@ export const POST = async (
   } as InviteWorkflow.AcceptInviteWorkflowInputDTO
 
   let users
+
   try {
     const { result } = await workflow.run({ input })
     users = result

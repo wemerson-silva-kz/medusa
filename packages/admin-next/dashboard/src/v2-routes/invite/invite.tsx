@@ -12,12 +12,7 @@ import { decodeToken } from "react-jwt"
 import { Form } from "../../components/common/form"
 import { LogoBox } from "../../components/common/logo-box"
 import { isAxiosError } from "../../lib/is-axios-error"
-import {
-  useAdminAcceptInviteV2,
-  useAdminCreateAuthUser,
-  useCreateUserAndSetSession,
-} from "../../lib/api-v2"
-import { medusa } from "../../lib/medusa"
+import { useAdminAcceptInvite, useAdminCreateAuthUser } from "../../lib/api-v2"
 
 const CreateAccountSchema = z
   .object({
@@ -212,7 +207,7 @@ const CreateView = ({
     useAdminCreateAuthUser()
 
   const { mutateAsync: acceptInvite, isLoading: isAcceptingInvite } =
-    useAdminAcceptInviteV2()
+    useAdminAcceptInvite()
 
   const handleSubmit = form.handleSubmit(async (data) => {
     await createAuthUser(
@@ -221,12 +216,11 @@ const CreateView = ({
         password: data.password,
       },
       {
-        // @ts-ignore
         onSuccess: async ({ token: authToken }) => {
           await acceptInvite({
             first_name: data.first_name,
             last_name: data.last_name,
-            token: token,
+            inviteToken: token,
             authToken,
           })
           onSuccess()
