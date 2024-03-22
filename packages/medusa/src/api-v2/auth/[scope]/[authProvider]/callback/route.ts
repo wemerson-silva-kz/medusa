@@ -22,11 +22,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
   const authResult = await service.validateCallback(authProvider, authData)
 
-  const { success, error, authUser, location, successRedirectUrl } = authResult
-  if (location) {
-    res.redirect(location)
-    return
-  }
+  const { success, error, authUser, successRedirectUrl } = authResult
 
   if (success) {
     const { jwt_secret } = req.scope.resolve("configModule").projectConfig
@@ -36,7 +32,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
     if (successRedirectUrl) {
       const url = new URL(successRedirectUrl!)
-      url.searchParams.append("auth_token", token)
+      url.searchParams.append("access_token", token)
 
       const redirectUrl = `${url}`
 
