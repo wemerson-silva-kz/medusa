@@ -34,12 +34,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     const user = { ...authUser }
     const token = jwt.sign(user, jwt_secret)
 
-    const url = new URL(successRedirectUrl!)
-    url.searchParams.append("auth_token", token)
+    if (successRedirectUrl) {
+      const url = new URL(successRedirectUrl!)
+      url.searchParams.append("auth_token", token)
 
-    const redirectUrl = `${url}`
+      const redirectUrl = `${url}`
 
-    return res.redirect(redirectUrl)
+      return res.redirect(redirectUrl.toString())
+    }
+
+    return res.json({ token })
   }
 
   throw new MedusaError(

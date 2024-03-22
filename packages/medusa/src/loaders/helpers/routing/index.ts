@@ -724,12 +724,12 @@ export class RoutesLoader {
       const routes = descriptor.config.routes
 
       for (const route of routes) {
-        // log({
-        //   activityId: this.activityId,
-        //   message: `Registering route [${route.method?.toUpperCase()}] - ${
-        //     descriptor.route
-        //   }`,
-        // })
+        log({
+          activityId: this.activityId,
+          message: `Registering route [${route.method?.toUpperCase()}] - ${
+            descriptor.route
+          }`,
+        })
 
         /**
          * If the user hasn't opted out of error handling then
@@ -774,10 +774,10 @@ export class RoutesLoader {
       ).filter(Boolean) as MiddlewareVerb[]
 
       for (const method of methods) {
-        // log({
-        //   activityId: this.activityId,
-        //   message: `Registering middleware [${method}] - ${route.matcher}`,
-        // })
+        log({
+          activityId: this.activityId,
+          message: `Registering middleware [${method}] - ${route.matcher}`,
+        })
 
         this.router[method.toLowerCase()](route.matcher, ...route.middlewares)
       }

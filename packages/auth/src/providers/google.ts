@@ -14,6 +14,7 @@ type ProviderConfig = {
   clientID: string
   clientSecret: string
   callbackURL: string
+  successRedirectUrl?: string
 }
 
 class GoogleProvider extends AbstractAuthModuleProvider {
@@ -127,7 +128,17 @@ class GoogleProvider extends AbstractAuthModuleProvider {
     try {
       const accessToken = await client.getToken(tokenParams)
 
-      return await this.verify_(accessToken.token.id_token)
+      const { authUser, success } = await this.verify_(
+        accessToken.token.id_token
+      )
+
+      const { successRedirectUrl } = this.getConfigFromScope()
+
+      return {
+        success,
+        authUser,
+        successRedirectUrl,
+      }
     } catch (error) {
       return { success: false, error: error.message }
     }
