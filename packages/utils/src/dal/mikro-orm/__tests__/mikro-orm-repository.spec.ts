@@ -1,17 +1,17 @@
 import {
+  BeforeCreate,
   Collection,
   Entity,
+  EntityManager,
   ManyToOne,
+  MikroORM,
   OneToMany,
+  OnInit,
   PrimaryKey,
   Property,
-  MikroORM,
-  EntityManager,
-  OnInit,
-  BeforeCreate,
-  BeforeUpsert,
 } from "@mikro-orm/core"
 import { mikroOrmBaseRepositoryFactory } from "../mikro-orm-repository"
+import { dropDatabase } from "pg-god"
 
 @Entity()
 class Entity1 {
@@ -80,6 +80,11 @@ describe("mikroOrmRepository", () => {
     let manager!: EntityManager
 
     beforeEach(async () => {
+      await dropDatabase(
+        { databaseName: "dogfood", errorIfNonExist: false },
+        { user: "postgres" }
+      )
+
       orm = await MikroORM.init({
         entities: [Entity1, Entity2],
         dbName: "dogfood",
@@ -340,7 +345,7 @@ describe("mikroOrmRepository", () => {
       )
     })
 
-    it("should successfully update, create, and delete subentities an entity with a one-to-many relation", async () => {
+    it.only("should successfully update, create, and delete subentities an entity with a one-to-many relation", async () => {
       const entity1Manager = new Entity1Repository({ manager })
       const entity1 = {
         id: "1",

@@ -6,6 +6,7 @@ import {
   FilterQuery as InternalFilterQuery,
   RepositoryService,
   RepositoryTransformOptions,
+  UpsertConfig,
 } from "@medusajs/types"
 import {
   EntityManager,
@@ -24,11 +25,9 @@ import {
 import { SqlEntityManager } from "@mikro-orm/postgresql"
 import {
   arrayDifference,
-  deepCopy,
   isString,
-  pickDeep,
+  lowerCaseFirst,
   promiseAll,
-  removeUndefined,
 } from "../../common"
 import { buildQuery } from "../../modules-sdk"
 import {
@@ -36,7 +35,6 @@ import {
   transactionWrapper,
 } from "../utils"
 import { mikroOrmSerializer, mikroOrmUpdateDeletedAtRecursively } from "./utils"
-import { UpsertConfig } from "@medusajs/types"
 
 export class MikroOrmBase<T = any> {
   readonly manager_: any
@@ -378,34 +376,55 @@ export function mikroOrmBaseRepositoryFactory<T extends object = object>(
         )
       }
 
+      const entryUpsertedMap = new Map<string, T>()
+
+      // create top level entity
+      const toCreate = data.map((entry) => {
+        const entryEntity = manager.create<T>(entity, entry)
+
+        entryUpsertedMap.set(entryEntity.id, entry)
+
+        if (!upsertConfig.relations?.length) {
+          return entryEntity
+        }
+
+        upsertConfig.relations.forEach((relation) => {
+          delete entryEntity[relation]
+        })
+
+        return entryEntity
+      })
+
+      const upsertedTopLevelEntities = await manager.upsertMany(
+        entity,
+        toCreate
+      )
+
       const withRelations = await promiseAll(
-        data.map(async (entry) => {
-          const entryWithRelations = manager.create<T>(entity, entry)
+        upsertedTopLevelEntities.map(async (entityEntry) => {
+          const entry = entryUpsertedMap.get(entityEntry.id)!
+
           await promiseAll(
             allRelations?.map(async (relation) => {
               const relationField = relation.name as keyof T
 
               if (!upsertConfig.relations?.includes(relationField)) {
-                delete entryWithRelations[relationField]
+                delete entry[relationField]
                 return
               } else {
-                await this.assignRelation_(
-                  manager,
-                  entryWithRelations,
-                  relation
-                )
+                await this.assignRelation_(manager, entry, relation)
                 return
               }
             })
           )
 
-          return entryWithRelations
+          return entry
         })
       )
 
       console.log(withRelations)
 
-      return manager.upsertMany(entity, withRelations)
+      return await manager.upsertMany(entity, withRelations)
       // // Define primary keys
       // const primaryKeys =
       //   MikroOrmAbstractBaseRepository_.retrievePrimaryKeys(entity)
@@ -528,7 +547,11 @@ export function mikroOrmBaseRepositoryFactory<T extends object = object>(
       data: T,
       relation: EntityProperty
     ) {
-      const dataForRelation = data[relation.name]
+      const unmanagedData = manager.create(entity, data, {
+        managed: false,
+      })
+      const dataForRelation = unmanagedData[relation.name]
+
       // If the field is not set, we ignore it. Null and empty arrays are a valid input and are handled below
       if (dataForRelation === undefined) {
         return
@@ -546,10 +569,19 @@ export function mikroOrmBaseRepositoryFactory<T extends object = object>(
       const toLink: string[] = []
       const toKeep: string[] = []
 
+      let normalizedData = []
+
+      if (dataForRelation.isInitialized()) {
+        normalizedData = dataForRelation.getItems()
+      } else {
+        await dataForRelation.init()
+        normalizedData = dataForRelation.getItems()
+      }
+
       if (dataForRelation) {
-        const normalizedData = Array.isArray(dataForRelation)
+        /*/!*Array.isArray(dataForRelation)
           ? dataForRelation
-          : [dataForRelation]
+          : [dataForRelation]*!/
 
         // FUTURE: We assume that the `id` field is the primary key. This is not always the case, and we should handle composite keys as well
         // FUTURE: We might want to recreate an entity with the same ID (and there might be no other fields, revisit).
@@ -564,7 +596,7 @@ export function mikroOrmBaseRepositoryFactory<T extends object = object>(
           if (entity.id) {
             toKeep.push(entity.id)
           }
-        }
+        }*/
       }
 
       // TODO: If null or an empty array are explicitly passed, we want to delete the relation completely
@@ -575,18 +607,32 @@ export function mikroOrmBaseRepositoryFactory<T extends object = object>(
 
       if (relation.reference === ReferenceType.ONE_TO_MANY) {
         // TODO: We want to delete all child entities
-        if (
-          dataForRelation === null ||
-          (Array.isArray(dataForRelation) && dataForRelation.length === 0)
-        ) {
+        if (!normalizedData.length) {
           return null
           // manager.nativeDelete(relationToProcess.entity, {
           //   id: { $nin: toKeep },
           // })
         }
 
-        // console.log(toUpsert)
-        // const upserted = await manager.upsertMany(relation.type, toUpsert)
+        const joinColumns =
+          relation.targetMeta?.properties[lowerCaseFirst(entity.name)]
+            ?.joinColumns
+        const joinColumnsConstraints = {}
+        joinColumns?.forEach((joinColumn, index) => {
+          const referencedColumnName = relation.referencedColumnNames[index]
+          joinColumnsConstraints[joinColumn] = data[referencedColumnName]
+        })
+        const upserted = await manager.upsertMany(normalizedData)
+
+        const test = await manager.find(relation.type, {
+          id: normalizedData.map((d) => d.id),
+        })
+
+        await manager.nativeDelete(relation.type, {
+          ...joinColumnsConstraints,
+          id: { $nin: upserted.map((d) => d.id) },
+        })
+
         // data[relation.name] = upserted
         return
       }
