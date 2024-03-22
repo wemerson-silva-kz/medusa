@@ -11,22 +11,32 @@ import {
   EntityManager,
   EntitySchema,
   LoadStrategy,
+  ReferenceType,
   RequiredEntityData,
 } from "@mikro-orm/core"
 import { FindOptions as MikroOptions } from "@mikro-orm/core/drivers/IDatabaseDriver"
 import {
   EntityClass,
   EntityName,
+  EntityProperty,
   FilterQuery as MikroFilterQuery,
 } from "@mikro-orm/core/typings"
 import { SqlEntityManager } from "@mikro-orm/postgresql"
-import { isString } from "../../common"
+import {
+  arrayDifference,
+  deepCopy,
+  isString,
+  pickDeep,
+  promiseAll,
+  removeUndefined,
+} from "../../common"
 import { buildQuery } from "../../modules-sdk"
 import {
   getSoftDeletedCascadedEntitiesIdsMappedBy,
   transactionWrapper,
 } from "../utils"
 import { mikroOrmSerializer, mikroOrmUpdateDeletedAtRecursively } from "./utils"
+import { UpsertConfig } from "@medusajs/types"
 
 export class MikroOrmBase<T = any> {
   readonly manager_: any
@@ -111,7 +121,11 @@ export class MikroOrmBaseRepository<T extends object = object>
     throw new Error("Method not implemented.")
   }
 
-  upsert(data: unknown[], context: Context = {}): Promise<T[]> {
+  upsert(
+    data: unknown[],
+    upsertConfig: UpsertConfig<T> = {},
+    context: Context = {}
+  ): Promise<T[]> {
     throw new Error("Method not implemented.")
   }
 
@@ -333,91 +347,251 @@ export function mikroOrmBaseRepositoryFactory<T extends object = object>(
       )
     }
 
-    async upsert(data: any[], context: Context = {}): Promise<T[]> {
+    // Upsert does several things to simplify module implementation.
+    // For each entry of your base entity, it will go through all relations, and it will do a diff between what is passed and what is in the database.
+    // For each relation, it create new entries (without an ID), it will associate existing entries (with only an ID), and it will update existing entries (with an ID and other fields).
+    // Finally, it will delete the relation entries that were omitted in the new data.
+    async upsert(
+      data: any[],
+      upsertConfig: UpsertConfig<T> = {},
+      context: Context = {}
+    ): Promise<T[]> {
+      if (!data.length) {
+        return []
+      }
       const manager = this.getActiveManager<EntityManager>(context)
 
-      const primaryKeys =
-        MikroOrmAbstractBaseRepository_.retrievePrimaryKeys(entity)
+      // Handle the relations
+      const allRelations = manager
+        .getDriver()
+        .getMetadata()
+        .get(entity.name).relations
 
-      let primaryKeysCriteria: { [key: string]: any }[] = []
-      if (primaryKeys.length === 1) {
-        const primaryKeyValues = data
-          .map((d) => d[primaryKeys[0]])
-          .filter(Boolean)
+      const nonexistentRelations = arrayDifference(
+        (upsertConfig.relations as string[]) ?? [],
+        allRelations.map((r) => r.name)
+      )
 
-        if (primaryKeyValues.length) {
-          primaryKeysCriteria.push({
-            [primaryKeys[0]]: primaryKeyValues,
-          })
-        }
-      } else {
-        primaryKeysCriteria = data.map((d) => ({
-          $and: primaryKeys.map((key) => ({ [key]: d[key] })),
-        }))
-      }
-
-      let allEntities: T[][] = []
-
-      if (primaryKeysCriteria.length) {
-        allEntities = await Promise.all(
-          primaryKeysCriteria.map(
-            async (criteria) =>
-              await this.find(
-                { where: criteria } as DAL.FindOptions<T>,
-                context
-              )
-          )
+      if (nonexistentRelations.length) {
+        throw new Error(
+          `Nonexistent relations were passed during upsert: ${nonexistentRelations}`
         )
       }
 
-      const existingEntities = allEntities.flat()
+      const withRelations = await promiseAll(
+        data.map(async (entry) => {
+          const entryWithRelations = manager.create<T>(entity, entry)
+          await promiseAll(
+            allRelations?.map(async (relation) => {
+              const relationField = relation.name as keyof T
 
-      const existingEntitiesMap = new Map<string, T>()
-      existingEntities.forEach((entity) => {
-        if (entity) {
-          const key =
-            MikroOrmAbstractBaseRepository_.buildUniqueCompositeKeyValue(
-              primaryKeys,
-              entity
-            )
-          existingEntitiesMap.set(key, entity)
-        }
-      })
-
-      const upsertedEntities: T[] = []
-      const createdEntities: T[] = []
-      const updatedEntities: T[] = []
-
-      data.forEach((data_) => {
-        // In case the data provided are just strings, then we build an object with the primary key as the key and the data as the valuecd -
-        const key =
-          MikroOrmAbstractBaseRepository_.buildUniqueCompositeKeyValue(
-            primaryKeys,
-            data_
+              if (!upsertConfig.relations?.includes(relationField)) {
+                delete entryWithRelations[relationField]
+                return
+              } else {
+                await this.assignRelation_(
+                  manager,
+                  entryWithRelations,
+                  relation
+                )
+                return
+              }
+            })
           )
 
-        const existingEntity = existingEntitiesMap.get(key)
-        if (existingEntity) {
-          const updatedType = manager.assign(existingEntity, data_)
-          updatedEntities.push(updatedType)
-        } else {
-          const newEntity = manager.create<T>(entity, data_)
-          createdEntities.push(newEntity)
+          return entryWithRelations
+        })
+      )
+
+      console.log(withRelations)
+
+      return manager.upsertMany(entity, withRelations)
+      // // Define primary keys
+      // const primaryKeys =
+      //   MikroOrmAbstractBaseRepository_.retrievePrimaryKeys(entity)
+
+      // let primaryKeysCriteria: { [key: string]: any }[] = []
+      // if (primaryKeys.length === 1) {
+      //   const primaryKeyValues = data
+      //     .map((d) => d[primaryKeys[0]])
+      //     .filter(Boolean)
+
+      //   if (primaryKeyValues.length) {
+      //     primaryKeysCriteria.push({
+      //       [primaryKeys[0]]: primaryKeyValues,
+      //     })
+      //   }
+      // } else {
+      //   primaryKeysCriteria = data.map((d) => ({
+      //     $and: primaryKeys.map((key) => ({ [key]: d[key] })),
+      //   }))
+      // }
+
+      // // Get existing entities in the DB
+      // let allEntities: T[][] = []
+
+      // if (primaryKeysCriteria.length) {
+      //   allEntities = await Promise.all(
+      //     primaryKeysCriteria.map(
+      //       async (criteria) =>
+      //         await this.find(
+      //           { where: criteria } as DAL.FindOptions<T>,
+      //           context
+      //         )
+      //     )
+      //   )
+      // }
+
+      // const existingEntities = allEntities.flat()
+
+      // const existingEntitiesMap = new Map<string, T>()
+      // existingEntities.forEach((entity) => {
+      //   if (entity) {
+      //     const key =
+      //       MikroOrmAbstractBaseRepository_.buildUniqueCompositeKeyValue(
+      //         primaryKeys,
+      //         entity
+      //       )
+      //     existingEntitiesMap.set(key, entity)
+      //   }
+      // })
+
+      // const upsertedEntities: T[] = []
+      // const createdEntities: T[] = []
+      // const updatedEntities: T[] = []
+
+      // // Process new data
+      // data.forEach((entry) => {
+      //   // In case the data provided are just strings, then we build an object with the primary key as the key and the data as the valuecd -
+      //   const key =
+      //     MikroOrmAbstractBaseRepository_.buildUniqueCompositeKeyValue(
+      //       primaryKeys,
+      //       entry
+      //     )
+
+      //   // Handle the relations
+      //   const entityName = entry.constructor.name
+      //   const allRelations = manager
+      //     .getDriver()
+      //     .getMetadata()
+      //     .get(entityName).relations
+
+      //   const nonexistentRelations = arrayDifference(
+      //     (upsertConfig.relations as string[]) ?? [],
+      //     allRelations.map((r) => r.name)
+      //   )
+
+      //   if (nonexistentRelations.length) {
+      //     throw new Error(
+      //       `Nonexistent relations were passed during upsert: ${nonexistentRelations}`
+      //     )
+      //   }
+
+      //   // TODO: Don't mutate
+      //   allRelations?.forEach((relation) => {
+      //     const relationField = relation.name as keyof T
+      //     if (!upsertConfig.relations?.includes(relationField)) {
+      //       entry[relationField] = undefined
+      //     } else {
+      //       this.assignRelation_(manager, entry, relationField, relation)
+      //     }
+      //   })
+      //   entry = removeUndefined(entry)
+
+      //   // Update or create the entity
+      //   const existingEntity = existingEntitiesMap.get(key)
+      //   if (existingEntity) {
+      //     const updatedType = manager.assign(existingEntity, entry)
+      //     updatedEntities.push(updatedType)
+      //   } else {
+      //     const newEntity = manager.create<T>(entity, entry)
+      //     createdEntities.push(newEntity)
+      //   }
+      // })
+
+      // if (createdEntities.length) {
+      //   manager.persist(createdEntities)
+      //   upsertedEntities.push(...createdEntities)
+      // }
+
+      // if (updatedEntities.length) {
+      //   manager.persist(updatedEntities)
+      //   upsertedEntities.push(...updatedEntities)
+      // }
+
+      // // TODO return the all, created, updated entities
+      // return upsertedEntities
+    }
+
+    protected async assignRelation_(
+      manager: EntityManager,
+      data: T,
+      relation: EntityProperty
+    ) {
+      const dataForRelation = data[relation.name]
+      // If the field is not set, we ignore it. Null and empty arrays are a valid input and are handled below
+      if (dataForRelation === undefined) {
+        return
+      }
+
+      // Let the ORM handle these conditions, as it should do the right thing
+      if (
+        relation.reference === ReferenceType.MANY_TO_ONE ||
+        relation.reference === ReferenceType.ONE_TO_ONE
+      ) {
+        return
+      }
+
+      const toUpsert: T[] = []
+      const toLink: string[] = []
+      const toKeep: string[] = []
+
+      if (dataForRelation) {
+        const normalizedData = Array.isArray(dataForRelation)
+          ? dataForRelation
+          : [dataForRelation]
+
+        // FUTURE: We assume that the `id` field is the primary key. This is not always the case, and we should handle composite keys as well
+        // FUTURE: We might want to recreate an entity with the same ID (and there might be no other fields, revisit).
+        // If only an ID is passed, then we just want to create an association with an existing entity. Otherwise we want to either update the entity or create a new one
+        for (const row of normalizedData) {
+          if (row.id && Object.keys(row).length === 1) {
+            toLink.push(row.id)
+          } else if (!!row) {
+            toUpsert.push(row)
+          }
+
+          if (entity.id) {
+            toKeep.push(entity.id)
+          }
         }
-      })
-
-      if (createdEntities.length) {
-        manager.persist(createdEntities)
-        upsertedEntities.push(...createdEntities)
       }
 
-      if (updatedEntities.length) {
-        manager.persist(updatedEntities)
-        upsertedEntities.push(...updatedEntities)
+      // TODO: If null or an empty array are explicitly passed, we want to delete the relation completely
+      if (relation.reference === ReferenceType.MANY_TO_MANY) {
+        // TODO: Delete rows from pivot table
+        return null
       }
 
-      // TODO return the all, created, updated entities
-      return upsertedEntities
+      if (relation.reference === ReferenceType.ONE_TO_MANY) {
+        // TODO: We want to delete all child entities
+        if (
+          dataForRelation === null ||
+          (Array.isArray(dataForRelation) && dataForRelation.length === 0)
+        ) {
+          return null
+          // manager.nativeDelete(relationToProcess.entity, {
+          //   id: { $nin: toKeep },
+          // })
+        }
+
+        // console.log(toUpsert)
+        // const upserted = await manager.upsertMany(relation.type, toUpsert)
+        // data[relation.name] = upserted
+        return
+      }
+
+      return
     }
   }
 
